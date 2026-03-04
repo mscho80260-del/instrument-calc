@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="계측변환">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>계측 변환기</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0f172a;--bg2:#1e293b;--bg3:#334155;
+  --surface:#1e293b;--surface2:#263447;
+  --border:#334155;--border2:#3f526b;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
+  --blue:#38bdf8;--blue-dim:rgba(56,189,248,0.12);--blue-glow:rgba(56,189,248,0.25);
+  --orange:#fb923c;--orange-dim:rgba(251,146,60,0.12);--orange-glow:rgba(251,146,60,0.25);
+  --red:#f87171;--radius:16px;--rsm:10px;
+}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;-webkit-font-smoothing:antialiased}
+.app{max-width:460px;margin:0 auto;padding:0 14px 100px}
+
+/* Header */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 2px 16px}
+.hdr h1{font-size:20px;font-weight:700;letter-spacing:-0.5px}
+.hdr p{font-size:10px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace;letter-spacing:1.5px}
+.badge{background:var(--blue-dim);border:1px solid rgba(56,189,248,.3);color:var(--blue);font-family:'DM Mono',monospace;font-size:10px;font-weight:600;padding:5px 11px;border-radius:20px;letter-spacing:1px}
+
+/* Tabs */
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.tab{padding:14px 8px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--text3);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.tab svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.tab.act-b{background:var(--blue-dim);border-color:var(--blue);color:var(--blue);box-shadow:0 0 20px var(--blue-glow)}
+.tab.act-o{background:var(--orange-dim);border-color:var(--orange);color:var(--orange);box-shadow:0 0 20px var(--orange-glow)}
+
+/* Card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px}
+.card-t{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-t::before{content:'';display:inline-block;width:3px;height:12px;border-radius:2px;background:var(--blue);flex-shrink:0}
+.card-t.o::before{background:var(--orange)}
+
+/* Input rows */
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.row:last-child{margin-bottom:0}
+.grp{flex:1}
+.grp label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;letter-spacing:.3px}
+
+/* Input with ± */
+.iw{display:flex;align-items:center;border:1.5px solid var(--border2);border-radius:var(--rsm);background:var(--bg);overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.iw:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
+.iw.o:focus-within{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-dim)}
+.iw input{flex:1;min-width:0;padding:11px 10px;border:none;background:transparent;color:var(--text);font-family:'DM Mono',monospace;font-size:16px;font-weight:500;outline:none;-webkit-appearance:none}
+.iw input::-webkit-outer-spin-button,.iw input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.iw input[type=number]{-moz-appearance:textfield}
+.iw input.big{font-size:22px;padding:13px 10px}
+.iw .unit{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--text3);padding-right:12px;flex-shrink:0}
+
+/* ± button */
+.pm{width:38px;min-height:44px;border:none;border-right:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;user-select:none;-webkit-user-select:none}
+.pm:active,.pm.flash{background:var(--blue-dim);color:var(--blue)}
+.pm.o:active,.pm.o.flash{background:var(--orange-dim);color:var(--orange)}
+
+/* Divider */
+.div{height:1px;background:var(--border);margin:14px 0}
+
+/* Result */
+.res{border-radius:var(--rsm);margin-top:14px}
+.res-in{padding:20px 16px;text-align:center;border-radius:var(--rsm)}
+.res.b .res-in{background:linear-gradient(135deg,rgba(56,189,248,.08),rgba(14,165,233,.04));border:1px solid rgba(56,189,248,.2)}
+.res.o .res-in{background:linear-gradient(135deg,rgba(251,146,60,.08),rgba(234,88,12,.04));border:1px solid rgba(251,146,60,.2)}
+.res-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:2px;font-weight:600;margin-bottom:8px;font-family:'DM Mono',monospace}
+.res-val{font-family:'DM Mono',monospace;font-size:44px;font-weight:600;line-height:1;letter-spacing:-1px}
+.res-val.b{color:var(--blue)}.res-val.o{color:var(--orange)}
+.res-unit{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);margin-top:5px}
+
+/* Progress */
+.prog{margin-top:14px}
+.prog-tr{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.prog-fi{height:100%;border-radius:2px;transition:width .35s cubic-bezier(.4,0,.2,1)}
+.prog-fi.b{background:linear-gradient(90deg,#7dd3fc,var(--blue))}
+.prog-lbls{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-top:4px}
+
+/* Detail */
+.det{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.det-i{background:var(--bg);border:1px solid var(--border);border-radius:var(--rsm);padding:12px 10px;text-align:center}
+.det-i .v{font-family:'DM Mono',monospace;font-size:16px;font-weight:600;color:var(--text)}
+.det-i .l{font-size:9px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
+
+/* Toggle */
+.tog{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px;margin-top:12px;border:1px dashed var(--border2);border-radius:var(--rsm);background:transparent;color:var(--text3);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.tog:active{background:var(--blue-dim);border-color:var(--blue);color:var(--blue)}
+
+/* Pills */
+.pills{display:flex;gap:8px;margin-bottom:14px}
+.pill{flex:1;padding:11px 6px;border:1.5px solid var(--border2);border-radius:var(--rsm);background:var(--bg);font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--text3);text-align:center;cursor:pointer;transition:all .2s}
+.pill.on{border-color:var(--orange);background:var(--orange-dim);color:var(--orange);box-shadow:0 0 12px var(--orange-glow)}
+
+/* RTD Table */
+.rtbl{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;font-family:'DM Mono',monospace;font-size:11px}
+.rtbl .th{background:var(--orange-dim);color:var(--orange);padding:7px 4px;text-align:center;border-radius:5px;font-weight:600}
+.rtbl .td{background:var(--bg);color:var(--text2);padding:7px 4px;text-align:center;border-radius:5px;border:1px solid var(--border)}
+
+/* Panel */
+.pnl{display:none}.pnl.on{display:block;animation:up .2s ease}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Error */
+.err{color:var(--red);font-size:11px;text-align:center;margin-top:8px;font-family:'DM Mono',monospace}
+
+/* Install */
+.install-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:14px 16px;z-index:100;justify-content:space-between;align-items:center}
+.install-bar.show{display:flex}
+.install-bar span{font-size:13px;font-weight:500;color:var(--text2)}
+.install-btn{padding:8px 18px;border:none;border-radius:8px;background:var(--blue);color:#0f172a;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.install-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px 8px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hdr">
+    <div>
+      <h1>계측 변환기</h1>
+      <p>INSTRUMENT CALCULATOR</p>
+    </div>
+    <div class="badge">v2.0</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab act-b" id="tS" onclick="go('s')">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>스케일 변환
+    </button>
+    <button class="tab" id="tR" onclick="go('r')">
+      <svg viewBox="0 0 24 24"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>RTD 온도
+    </button>
+  </div>
+
+  <!-- Scale Panel -->
+  <div class="pnl on" id="pS">
+    <div class="card">
+      <div class="card-t">입력 신호 범위</div>
+      <div class="row">
+        <div class="grp"><label>신호 최소</label>
+          <div class="iw"><button class="pm" onclick="ts('sMin','cS')">±</button><input type="number" id="sMin" value="4" inputmode="decimal" oninput="cS()"></div></div>
+        <div class="grp"><label>신호 최대</label>
+          <div class="iw"><button class="pm" onclick="ts('sMax','cS')">±</button><input type="number" id="sMax" value="20" inputmode="decimal" oninput="cS()"></div></div>
+      </div>
+      <div class="div"></div>
+      <div class="card-t">출력 스케일 범위</div>
+      <div class="row">
+        <div class="grp"><label>스케일 최소</label>
+          <div class="iw"><button class="pm" onclick="ts('oMin','cS')">±</button><input type="number" id="oMin" value="0" inputmode="decimal" oninput="cS()"></div></div>
+        <div class="grp"><label>스케일 최대</label>
+          <div class="iw"><button class="pm" onclick="ts('oMax','cS')">±</button><input type="number" id="oMax" value="100" inputmode="decimal" oninput="cS()"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-t">신호 → 스케일 변환</div>
+      <div class="grp"><label>현재 신호값</label>
+        <div class="iw"><button class="pm" onclick="ts('sigIn','cS')">±</button><input type="number" id="sigIn" value="8" inputmode="decimal" step="0.01" oninput="cS()"></div>
+      </div>
+      <div class="res b"><div class="res-in">
+        <div class="res-lbl">환산 값</div>
+        <div class="res-val b" id="sVal">25.00</div>
+        <div class="res-unit" id="sUnit">—</div>
+      </div></div>
+      <div class="prog">
+        <div class="prog-tr"><div class="prog-fi b" id="sProg" style="width:25%"></div></div>
+        <div class="prog-lbls"><span id="sPL">0</span><span id="sPR">100</span></div>
+      </div>
+      <div class="det">
+        <div class="det-i"><div class="v" id="sPct">25.0%</div><div class="l">퍼센트</div></div>
+        <div class="det-i"><div class="v" id="sSpn">16.0</div><div class="l">신호 스팬</div></div>
+      </div>
+      <button class="tog" onclick="togRev()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+        스케일 → 신호 역변환
+      </button>
+    </div>
+
+    <div class="card" id="revCard" style="display:none">
+      <div class="card-t">스케일 → 신호 역변환</div>
+      <div class="grp"><label>스케일 값 입력</label>
+        <div class="iw"><button class="pm" onclick="ts('revIn','cR2')">±</button><input type="number" id="revIn" value="50" inputmode="decimal" step="0.01" oninput="cR2()"></div>
+      </div>
+      <div class="res b"><div class="res-in">
+        <div class="res-lbl">환산 신호값</div>
+        <div class="res-val b" id="revVal">12.00</div>
+        <div class="res-unit">—</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- RTD Panel -->
+  <div class="pnl" id="pR">
+    <div class="card">
+      <div class="card-t o">RTD 타입</div>
+      <div class="pills">
+        <div class="pill on" onclick="setRT('pt100',this)">PT100</div>
+        <div class="pill" onclick="setRT('pt1000',this)">PT1000</div>
+        <div class="pill" onclick="setRT('jpt100',this)">JPT100</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-t o">저항 → 온도</div>
+      <div class="grp"><label>저항값 입력</label>
+        <div class="iw o"><button class="pm o" onclick="ts('rIn','cRT')">±</button><input class="big" type="number" id="rIn" value="100" inputmode="decimal" step="0.01" oninput="cRT()"><span class="unit" style="color:var(--orange)">Ω</span></div>
+      </div>
+      <div class="res o"><div class="res-in">
+        <div class="res-lbl">온도</div>
+        <div class="res-val o" id="rtVal">0.00</div>
+        <div class="res-unit">°C</div>
+      </div></div>
+      <div id="rtErr" class="err" style="display:none"></div>
+      <div class="det">
+        <div class="det-i"><div class="v" id="rtF">32.0°F</div><div class="l">화씨</div></div>
+        <div class="det-i"><div class="v" id="rtK">273.2K</div><div class="l">절대온도</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-t o">온도 → 저항</div>
+      <div class="grp"><label>온도 입력</label>
+        <div class="iw o"><button class="pm o" onclick="ts('tIn','cTR')">±</button><input class="big" type="number" id="tIn" value="0" inputmode="decimal" step="0.1" oninput="cTR()"><span class="unit" style="color:var(--orange)">°C</span></div>
+      </div>
+      <div class="res o"><div class="res-in">
+        <div class="res-lbl">저항값</div>
+        <div class="res-val o" id="trVal">100.00</div>
+        <div class="res-unit">Ω</div>
+      </div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-t o">참조 테이블 · <span id="tblT">PT100</span></div>
+      <div class="rtbl" id="rtTbl"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="install-bar" id="installBar">
+  <span>홈 화면에 추가하기</span>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="install-btn" id="installBtn">설치</button>
+    <button class="install-close" id="installClose">✕</button>
+  </div>
+</div>
+
+<script>
+function go(t){
+  document.getElementById('tS').className='tab'+(t==='s'?' act-b':'');
+  document.getElementById('tR').className='tab'+(t==='r'?' act-o':'');
+  document.getElementById('pS').className='pnl'+(t==='s'?' on':'');
+  document.getElementById('pR').className='pnl'+(t==='r'?' on':'');
+}
+
+/* ± 토글 버튼 */
+function ts(id,fn){
+  const el=document.getElementById(id);
+  const v=parseFloat(el.value);
+  if(!isNaN(v)) el.value=(-v).toString();
+  else el.value='-';
+  // 버튼 플래시 효과
+  const btn=el.closest('.iw').querySelector('.pm');
+  btn.classList.add('flash');
+  setTimeout(()=>btn.classList.remove('flash'),150);
+  if(fn==='cS')cS();
+  else if(fn==='cR2')cR2();
+  else if(fn==='cRT')cRT();
+  else if(fn==='cTR')cTR();
+}
+
+function cS(){
+  const lo=g('sMin'),hi=g('sMax'),oLo=g('oMin'),oHi=g('oMax'),cur=g('sigIn');
+  if([lo,hi,oLo,oHi,cur].some(isNaN))return;
+  const sp=hi-lo,r=sp?(cur-lo)/sp:0,v=oLo+r*(oHi-oLo),pct=r*100;
+  document.getElementById('sVal').textContent=v.toFixed(2);
+  document.getElementById('sPct').textContent=pct.toFixed(1)+'%';
+  document.getElementById('sSpn').textContent=sp.toFixed(1);
+  document.getElementById('sProg').style.width=Math.max(0,Math.min(100,pct))+'%';
+  document.getElementById('sPL').textContent=oLo;
+  document.getElementById('sPR').textContent=oHi;
+}
+function cR2(){
+  const lo=g('sMin'),hi=g('sMax'),oLo=g('oMin'),oHi=g('oMax'),sv=g('revIn');
+  if([lo,hi,oLo,oHi,sv].some(isNaN))return;
+  const sp=oHi-oLo,r=sp?(sv-oLo)/sp:0;
+  document.getElementById('revVal').textContent=(lo+r*(hi-lo)).toFixed(2);
+}
+let revOn=false;
+function togRev(){revOn=!revOn;document.getElementById('revCard').style.display=revOn?'block':'none';if(revOn)cR2()}
+
+const C={
+  pt100:{R0:100,A:3.9083e-3,B:-5.775e-7,C:-4.183e-12},
+  pt1000:{R0:1000,A:3.9083e-3,B:-5.775e-7,C:-4.183e-12},
+  jpt100:{R0:100,A:3.9739e-3,B:-5.870e-7,C:-4.4e-12}
+};
+let rt='pt100';
+function setRT(t,el){
+  rt=t;
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('tblT').textContent=t.toUpperCase();
+  cRT();cTR();bTbl();
+}
+function r2t(R){
+  const{R0,A,B}=C[rt];
+  if(R>=R0){const d=A*A-4*B*(1-R/R0);if(d<0)return null;return(-A+Math.sqrt(d))/(2*B)}
+  let t=(R/R0-1)/A;
+  for(let i=0;i<30;i++){
+    const{C:Cc}=C[rt];
+    const Rc=R0*(1+A*t+B*t*t+Cc*(t-100)*t*t*t);
+    const dR=R0*(A+2*B*t+Cc*(4*t*t*t-300*t*t));
+    const e=Rc-R;t-=e/dR;if(Math.abs(e)<1e-5)break;
+  }
+  return t;
+}
+function t2r(T){
+  const{R0,A,B,C:Cc}=C[rt];
+  return T>=0?R0*(1+A*T+B*T*T):R0*(1+A*T+B*T*T+Cc*(T-100)*T*T*T);
+}
+function cRT(){
+  const R=g('rIn'),el=document.getElementById('rtErr');
+  if(isNaN(R))return;
+  const T=r2t(R);
+  if(T===null||T<-200||T>850){
+    document.getElementById('rtVal').textContent='---';
+    el.textContent='범위 초과 (-200°C ~ 850°C)';el.style.display='block';
+    document.getElementById('rtF').textContent='---';
+    document.getElementById('rtK').textContent='---';return;
+  }
+  el.style.display='none';
+  document.getElementById('rtVal').textContent=T.toFixed(2);
+  document.getElementById('rtF').textContent=(T*9/5+32).toFixed(1)+'°F';
+  document.getElementById('rtK').textContent=(T+273.15).toFixed(1)+'K';
+}
+function cTR(){const T=g('tIn');if(isNaN(T))return;document.getElementById('trVal').textContent=t2r(T).toFixed(2)}
+function bTbl(){
+  const ts=[-50,0,50,100,150,200,250,300],el=document.getElementById('rtTbl');
+  el.innerHTML='<div class="th">°C</div><div class="th">Ω</div><div class="th">°C</div><div class="th">Ω</div>';
+  for(let i=0;i<ts.length;i+=2)
+    el.innerHTML+=`<div class="td">${ts[i]}</div><div class="td">${t2r(ts[i]).toFixed(2)}</div><div class="td">${ts[i+1]}</div><div class="td">${t2r(ts[i+1]).toFixed(2)}</div>`;
+}
+function g(id){return parseFloat(document.getElementById(id).value)}
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBar').classList.add('show')});
+document.getElementById('installBtn').addEventListener('click',()=>{if(!deferredPrompt)return;deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('installBar').classList.remove('show')})});
+document.getElementById('installClose').addEventListener('click',()=>document.getElementById('installBar').classList.remove('show'));
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+cS();cRT();cTR();bTbl();
+</script>
+</body>
+</html>
