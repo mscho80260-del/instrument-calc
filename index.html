@@ -277,13 +277,13 @@ body{
     <div class="card">
       <div class="card-t">입력 신호 범위</div>
       <div class="row">
-        <div class="grp"><label>신호 최소</label><input type="number" id="sMin" value="4" inputmode="decimal" oninput="cS()"></div>
-        <div class="grp"><label>신호 최대</label><input type="number" id="sMax" value="20" inputmode="decimal" oninput="cS()"></div>
+        <div class="grp"><label>신호 최소</label><input type="number" id="sMin" value="4" inputmode="text" oninput="cS()"></div>
+        <div class="grp"><label>신호 최대</label><input type="number" id="sMax" value="20" inputmode="text" oninput="cS()"></div>
       </div>
       <div class="card-t" style="margin-top:6px">출력 스케일 범위</div>
       <div class="row">
-        <div class="grp"><label>스케일 최소</label><input type="number" id="oMin" value="0" inputmode="decimal" oninput="cS()"></div>
-        <div class="grp"><label>스케일 최대</label><input type="number" id="oMax" value="100" inputmode="decimal" oninput="cS()"></div>
+        <div class="grp"><label>스케일 최소</label><input type="number" id="oMin" value="0" inputmode="text" oninput="cS()"></div>
+        <div class="grp"><label>스케일 최대</label><input type="number" id="oMax" value="100" inputmode="text" oninput="cS()"></div>
       </div>
     </div>
 
@@ -291,7 +291,7 @@ body{
       <div class="card-t">신호 → 스케일 변환</div>
       <div class="grp">
         <label>현재 신호값</label>
-        <input type="number" id="sigIn" value="8" inputmode="decimal" step="0.01" oninput="cS()">
+        <input type="number" id="sigIn" value="8" inputmode="text" step="0.01" oninput="cS()">
       </div>
       <div class="res blue">
         <div class="res-lbl">환산 값</div>
@@ -313,7 +313,7 @@ body{
       <div class="card-t">스케일 → 신호 역변환</div>
       <div class="grp">
         <label>스케일 값 입력</label>
-        <input type="number" id="revIn" value="50" inputmode="decimal" step="0.01" oninput="cR2()">
+        <input type="number" id="revIn" value="50" inputmode="text" step="0.01" oninput="cR2()">
       </div>
       <div class="res blue">
         <div class="res-lbl">환산 신호값</div>
@@ -339,7 +339,7 @@ body{
       <div class="grp orange">
         <label>저항값 입력</label>
         <div class="input-wrap">
-          <input class="big-input" type="number" id="rIn" value="100" inputmode="decimal" step="0.01" oninput="cRT()">
+          <input class="big-input" type="number" id="rIn" value="100" inputmode="text" step="0.01" oninput="cRT()">
           <span class="input-unit" style="color:var(--orange)">Ω</span>
         </div>
       </div>
@@ -360,7 +360,7 @@ body{
       <div class="grp orange">
         <label>온도 입력</label>
         <div class="input-wrap">
-          <input class="big-input" type="number" id="tIn" value="0" inputmode="decimal" step="0.1" oninput="cTR()">
+          <input class="big-input" type="number" id="tIn" value="0" inputmode="text" step="0.1" oninput="cTR()">
           <span class="input-unit" style="color:var(--orange)">°C</span>
         </div>
       </div>
